@@ -1,32 +1,45 @@
 from utils import * #import settings
 from os import path #find local files
-
 mixer.init()
-count=0
-class Player(sprite.Sprite): #pygame sprite class
 
-    def __init__(self): #initialize sprite class
+#since im relitively new to classes, i got a bit of help from the internet
+class Player(sprite.Sprite): #pygame sprite class
+    def __init__(self, screen): #initialize sprite class
         super().__init__()
-        player1=image.load('resources/assets/player/run/player-run-1.png')
-        player2=image.load('resources/assets/player/run/player-run-2.png')
-        player3=image.load('resources/assets/player/run/player-run-3.png')
-        player4=image.load('resources/assets/player/run/player-run-4.png')
-        player5=image.load('resources/assets/player/run/player-run-5.png')
-        player6=image.load('resources/assets/player/run/player-run-6.png')
+        #self.import_character_assets()
+        
+        #dust particles
+        #.convert_alpha doesnt make game laggy, got helped from internet
+        dustRun1=image.load('resources/assets/player/dust_particles/run/run_1.png').convert_alpha()
+        dustRun2=image.load('resources/assets/player/dust_particles/run/run_2.png').convert_alpha()
+        dustRun3=image.load('resources/assets/player/dust_particles/run/run_3.png').convert_alpha()
+        dustRun4=image.load('resources/assets/player/dust_particles/run/run_4.png').convert_alpha()
+        dustRun5=image.load('resources/assets/player/dust_particles/run/run_5.png').convert_alpha()
+        self.dustIndex = 0
+        self.display_surface = screen
+        self.dustIndexRun=[dustRun1, dustRun2, dustRun3, dustRun4, dustRun5]
+        #player animation
+        player1=image.load('resources/assets/player/run/player-run-1.png').convert_alpha()
+        player2=image.load('resources/assets/player/run/player-run-2.png').convert_alpha()
+        player3=image.load('resources/assets/player/run/player-run-3.png').convert_alpha()
+        player4=image.load('resources/assets/player/run/player-run-4.png').convert_alpha()
+        player5=image.load('resources/assets/player/run/player-run-5.png').convert_alpha()
+        player6=image.load('resources/assets/player/run/player-run-6.png').convert_alpha()
         self.playerWalk=[player1,player2,player3,player4,player5,player6]
         #self. = attributes of the same object/class
         self.playerIndex=0
         for i in range(6):
             self.playerWalk[i] = transform.scale(self.playerWalk[i],(84,84)) #resize all of the frames in the list
     
-        playerJump=image.load('resources/assets/player/jump/player-jump-1.png')
+        playerJump=image.load('resources/assets/player/jump/player-jump-1.png').convert_alpha()
         self.playerJump=transform.scale(playerJump, (84,84))
 
         #image=image displayed
         self.image=self.playerWalk[self.playerIndex] #what will be displayed will depend on the playerIndex value
         self.rect = self.image.get_rect(midbottom = (80, 300)) #rect=location
         self.gravity=0
- 
+    #def DustParticles(self):
+    #    self.dustJump = import_folder('resources/assets/player/dust_particles/jump')
     def PlayerInput(self): #player control method
         keys = key.get_pressed()
         if keys[K_SPACE] and self.rect.bottom >=300: #touch ground and space key pressed
@@ -47,23 +60,32 @@ class Player(sprite.Sprite): #pygame sprite class
             if self.playerIndex>=len(self.playerWalk):
                 self.playerIndex=0 #after the last frame, go to the first frame
             self.image = self.playerWalk[int(self.playerIndex)] #player will be updated with different frames
-
+    def RunDustAnimation(self):
+        if self.rect.bottom==300: #only show animation while running on ground
+            self.dustIndex+=0.2
+            if self.dustIndex>=len(self.dustIndexRun):
+                self.dustIndex=0
+            dustParticle = self.dustIndexRun[int(self.dustIndex)]
+            pos  = self.rect.bottomleft - math.Vector2(6, 10) #adjust position (got helped with this)
+            self.display_surface.blit(dustParticle, pos)
+            
     def update(self): #controls sprite actions by calling the methods
         self.PlayerInput()
         self.Gravity()
         self.PlayerAnimation()
+        self.RunDustAnimation()
 
 class Obstacle(sprite.Sprite):
 
     def __init__(self, type): #type argument for either sky or ground enemy
         super().__init__()
         if type=='opossum':
-            enemy1=image.load('resources/assets/opossum/opossum-1.png')
-            enemy2=image.load('resources/assets/opossum/opossum-2.png')
-            enemy3=image.load('resources/assets/opossum/opossum-3.png')
-            enemy4=image.load('resources/assets/opossum/opossum-4.png')
-            enemy5=image.load('resources/assets/opossum/opossum-5.png')
-            enemy6=image.load('resources/assets/opossum/opossum-6.png')
+            enemy1=image.load('resources/assets/opossum/opossum-1.png').convert_alpha()
+            enemy2=image.load('resources/assets/opossum/opossum-2.png').convert_alpha()
+            enemy3=image.load('resources/assets/opossum/opossum-3.png').convert_alpha()
+            enemy4=image.load('resources/assets/opossum/opossum-4.png').convert_alpha()
+            enemy5=image.load('resources/assets/opossum/opossum-5.png').convert_alpha()
+            enemy6=image.load('resources/assets/opossum/opossum-6.png').convert_alpha()
             self.frames=[enemy1,enemy2,enemy3,enemy4,enemy5,enemy6]
 
             for i in range(6):
@@ -71,10 +93,10 @@ class Obstacle(sprite.Sprite):
 
             yPosition=300 #spawn on ground
         else: #eagle
-            skyEnemy1=image.load('resources/assets/eagle/eagle-attack-1.png')
-            skyEnemy2=image.load('resources/assets/eagle/eagle-attack-2.png')
-            skyEnemy3=image.load('resources/assets/eagle/eagle-attack-3.png')
-            skyEnemy4=image.load('resources/assets/eagle/eagle-attack-4.png')
+            skyEnemy1=image.load('resources/assets/eagle/eagle-attack-1.png').convert_alpha()
+            skyEnemy2=image.load('resources/assets/eagle/eagle-attack-2.png').convert_alpha()
+            skyEnemy3=image.load('resources/assets/eagle/eagle-attack-3.png').convert_alpha()
+            skyEnemy4=image.load('resources/assets/eagle/eagle-attack-4.png').convert_alpha()
             self.frames=[skyEnemy1,skyEnemy2,skyEnemy3,skyEnemy4]  
 
             for i in range(4):
@@ -94,7 +116,7 @@ class Obstacle(sprite.Sprite):
 
     def update(self):
         self.EnemyAnimation()
-        self.rect.x -=8 #always move to the left
+        self.rect.x -=gameSpeed #always move to the left
         self.CleanUp()
 
     def CleanUp(self):
@@ -108,18 +130,14 @@ def displayScore(): #displaying score
     screen.blit(score,scoreRect)
     return currentTime
 
-def PlayerCollision(count):
-    if sprite.spritecollide(foxPlayer.sprite, obstacleGroup, False):
-        #obstacleGroup.empty() #deletes obstacles in group so that you don't die as soon as you spawn
+def PlayerCollision():
+    if sprite.spritecollide(foxPlayer.sprite, obstacleGroup, False): #if player and obstacle are colliding, obstacle will not be deleted (False)
+        obstacleGroup.empty() #deletes obstacles in group so that you don't die as soon as you spawn
         deathSound.play()
-        count +=1
-        print(count)
-        time.sleep(2)
-        return False #game active
+        return False #game active false
     else:
         return True
-
-
+#got helped with this
 dir=path.dirname(__file__)
 with open(path.join(dir, highScoreFile), 'w') as f: #read and write file
     try:
@@ -129,45 +147,41 @@ with open(path.join(dir, highScoreFile), 'w') as f: #read and write file
 
 jumpSound=mixer.Sound('resources/audio/jump.wav')
 test_font=font.Font("resources/fonts/Pixeltype.ttf", 50) #using this font
-bgMusic=mixer.Sound('resources/audio/music.ogg')
-bgMusic.play(loops = -1) #forever loop background music
 deathSound=mixer.Sound('resources/audio/die.wav')
-
+mixer.music.load('resources/audio/music.ogg')
+mixer.music.play(-1)
 foxPlayer = sprite.GroupSingle() #container which holds single sprite
-foxPlayer.add(Player()) #makes player class part a part of groupsingle()
+foxPlayer.add(Player(screen)) #makes player class part a part of groupsingle()
 
 obstacleGroup=sprite.Group() #holdes sprite class
 
-sky=image.load('resources/assets/sky.png')
+sky=image.load('resources/assets/sky.png').convert_alpha()
 background=transform.scale(sky, (800,400))
 
-ground=image.load('resources/assets/ground.png')
+ground=image.load('resources/assets/ground.png').convert_alpha()
 platform=transform.scale(ground, (800, 100))
-x=0
-bgimg=image.load('resources/assets/bg.png')
+bgimg=image.load('resources/assets/bg.png').convert_alpha()
 bg=transform.scale(bgimg, (800,400))
 
-#player
-idleFox=image.load('resources/assets/player/idle/player-idle-1.png')
-idleFox=transform.scale(idleFox, (175,175))
-idleRect=idleFox.get_rect(center=(400,175))
-
 #intro screen
-#gameName=test_font.render('Fox Runner', False, DARKPURPLE)
-gameName=image.load('resources/assets/title.png')
+gameName=image.load('resources/assets/title.png').convert_alpha()
 gameNameRect=gameName.get_rect(center=(400,150))
-#gameMessage=test_font.render('Press space to start', False, DARKPURPLE)
-gameMessage = transform.scale(image.load("resources/assets/press-enter.png"), (205, 30))
+gameMessage = transform.scale(image.load("resources/assets/press-enter.png").convert_alpha(), (205, 30))
 gameMessageRect=gameMessage.get_rect(center=(400,320))
 
 #timer
 obstacleTimer=USEREVENT+1 #custom event
 time.set_timer(obstacleTimer, 1500) #trigger event every x time
-
+x=0 #platform coordinates
+gameSpeed = 6 #default game speed
 while running:
     for evt in event.get():
         if evt.type==QUIT:
             running=False
+        if evt.type==KEYDOWN and evt.key == K_w:
+            mixer.music.fadeout(1000) #no music
+        if evt.type==KEYDOWN and evt.key == K_e:
+            mixer.music.play(-1) #loops music
         if gameActive == True:
             if evt.type==obstacleTimer: #when the event is triggered
                 #higher change of opossums spawning
@@ -176,25 +190,24 @@ while running:
             if evt.type==KEYDOWN and evt.key==K_SPACE:
                 gameActive=True #start game with space bar
                 startTime=(time.get_ticks()//1000)
-                    
     if gameActive: #gameActive is true 
-         relX= x% platform.get_rect().width
-         screen.blit(background, (0,0))      
-         screen.blit(platform, (relX - platform.get_rect().width,300))
-         if relX < platform.get_rect().width:
-             screen.blit(platform, (relX, 300))
-         x-=6
-         score=displayScore() #call score function
-         
-         foxPlayer.draw(screen) #draw sprites from player groupSingle
-         foxPlayer.update() #update sprites with update method
-         obstacleGroup.draw(screen)
-         obstacleGroup.update()
-         #gameActive = PlayerCollision()
-         PlayerCollision(count)
+        relX= x% platform.get_rect().width
+        screen.blit(background, (0,0))      
+        screen.blit(platform, (relX - platform.get_rect().width,300)) #moving platform
+        if relX < platform.get_rect().width:
+            screen.blit(platform, (relX, 300)) #covers the entire screen by bliting another image at tne end
+        x-=gameSpeed #pace moves with teh game
+        score=displayScore() #call score function
+
+        gameSpeed = (score // 5) +6 #higher score=faster speed
+        foxPlayer.draw(screen) #draw sprites from player groupSingle
+        foxPlayer.update() #update sprites with update method
+        obstacleGroup.draw(screen)
+        obstacleGroup.update()
+        gameActive = PlayerCollision() #true or false
 
     else:
-        if score > highscore:
+        if score > highscore: #update highscore file
             highscore = score
             with open(path.join(dir, highScoreFile), 'w') as f:
                 f.write(str(score)) 
@@ -204,17 +217,13 @@ while running:
         scoreMessageRect=scoreMessage.get_rect(center=(400,330))
         highScoreMessage=test_font.render(f'Highscore: {highscore}', False, DARKPURPLE)
         highScoreMessageRect=highScoreMessage.get_rect(center=(400,300))
-
-        if score==0: #after you start the game, score is no longer 0
-            if (time.get_ticks()//1000) % 2==0: #blinking effect
-                screen.blit(gameMessage, gameMessageRect) #when first load game
-            else:
-                screen.blit(bg, (0,0))
-                screen.blit(gameName, gameNameRect) #title game
-        else:
+        if score == 0: 
+            screen.blit(bg, (0,0))
+            screen.blit(gameMessage, gameMessageRect)
+            screen.blit(gameName, gameNameRect) #title game
+        else: 
             screen.blit(scoreMessage,scoreMessageRect) #message after playing game
-            screen.blit(highScoreMessage,highScoreMessageRect) #message after playing game
-
+            screen.blit(highScoreMessage, highScoreMessageRect)
     clock.tick(60) #frames per second
     display.flip()
             
